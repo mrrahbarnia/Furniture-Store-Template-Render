@@ -30,6 +30,15 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
+LOCAL_APPS = [
+]
+
+THIRD_PARTY_APP = [
+    'rest_framework',
+    'drf_spectacular',
+
+]
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -37,6 +46,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    *LOCAL_APPS,
+    *THIRD_PARTY_APP
 ]
 
 MIDDLEWARE = [
@@ -48,6 +59,18 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+if DEBUG:
+    import socket
+    MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
+    INSTALLED_APPS.append('debug_toolbar')
+    INSTALLED_APPS.append('django_extensions')
+    hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+    INTERNAL_IPS = [ip[:-1] + '1' for ip in ips] + ['127.0.0.1']
+
+
+
+
 
 ROOT_URLCONF = 'app.urls'
 
@@ -116,8 +139,20 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+MEDIA_URL = 'media/'
+
+STATIC_ROOT = '/vol/web/static'
+MEDIA_ROOT = '/vol/web/media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication'
+        'rest_framework.authentication.BasicAuthentication'
+    )
+}
