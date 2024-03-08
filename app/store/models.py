@@ -37,7 +37,7 @@ class Furniture(BaseModel):
             MinValueValidator(limit_value=1), MaxValueValidator(limit_value=10)
         ]
     )
-    views = models.PositiveIntegerField(default=0)
+    views = models.PositiveIntegerField(default=0, null=True, blank=True)
     image = models.ImageField(
         upload_to=furniture_image_file_path, null=True, blank=True
     )
@@ -64,6 +64,9 @@ class Furniture(BaseModel):
 
 
 class Category(BaseModel):
+    """
+    This class defines rows(attributes) of the Category table(class).
+    """
     name = models.CharField(max_length=150)
     slug = models.CharField(max_length=160)
     description = models.TextField()
@@ -76,6 +79,9 @@ class Category(BaseModel):
 
 
 class Company(BaseModel):
+    """
+    This class defines rows(attributes) of the Company table(class).
+    """
     name = models.CharField(max_length=150)
     slug = models.CharField(max_length=160)
     ceo = models.CharField(max_length=100)
@@ -89,6 +95,9 @@ class Company(BaseModel):
 
 
 class Material(BaseModel):
+    """
+    This class defines rows(attributes) of the Material table(class).
+    """
     material = models.CharField(max_length=150)
     slug = models.CharField(max_length=160)
 
@@ -100,6 +109,9 @@ class Material(BaseModel):
     
 
 class Color(BaseModel):
+    """
+    This class defines rows(attributes) of the Color table(class).
+    """
     color = models.CharField(max_length=150)
     slug = models.CharField(max_length=160)
 
@@ -111,6 +123,10 @@ class Color(BaseModel):
 
 
 class FurnitureMaterial(models.Model):
+    """
+    This class links the Furniture and 
+    the Material models together(M2M link table).
+    """
     furniture = models.ForeignKey(
         Furniture, on_delete=models.CASCADE, related_name='furniture_fur_mat_link'
     )
@@ -123,6 +139,10 @@ class FurnitureMaterial(models.Model):
 
 
 class FurnitureColor(models.Model):
+    """
+    This class links the Furniture and 
+    the Color models together(M2M link table).
+    """
     furniture = models.ForeignKey(
         Furniture, on_delete=models.CASCADE, related_name='furniture_fur_col_link'
     )
