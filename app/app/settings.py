@@ -34,6 +34,7 @@ LOCAL_APPS = [
     'core.apps.CoreConfig',
     'users.apps.UsersConfig',
     'store.apps.StoreConfig',
+    'common.apps.CommonConfig',
 ]
 
 THIRD_PARTY_APP = [
