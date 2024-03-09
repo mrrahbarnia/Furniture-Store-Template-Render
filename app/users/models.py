@@ -13,7 +13,9 @@ from common.models import BaseModel
 
 class BaseUserManager(BUM):
 
-    def create_user(self, email, is_active=True, is_admin=False, password=None):
+    def create_user(
+            self, email, is_active=True, is_admin=False, password=None
+    ):
         """Creating normal users with the given email and password."""
         if not email:
             raise ValueError("Users must have an email address")

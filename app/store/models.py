@@ -13,9 +13,10 @@ from django.core.validators import (
 
 from common.models import BaseModel
 
+
 def furniture_image_file_path(instance, filename):
     """Generating a file path for a new furniture image."""
-    ext = os.path.splitext (filename)[1]
+    ext = os.path.splitext(filename)[1]
     unique_name = uuid.uuid4()
     filename = f'{unique_name}{ext}'
 
@@ -23,12 +24,11 @@ def furniture_image_file_path(instance, filename):
     return path
 
 
-
 class Furniture(BaseModel):
     """
     This class defines rows(attributes) of the Furniture table(class).
     """
-    name = models.CharField(max_length=150)
+    name = models.CharField(max_length=150, unique=True)
     slug = models.CharField(max_length=160)
     price = models.DecimalField(max_digits=8, decimal_places=2)
     stock = models.PositiveIntegerField(default=0)
@@ -43,10 +43,12 @@ class Furniture(BaseModel):
     )
     description = models.TextField()
     category = models.ForeignKey(
-        'Category', on_delete=models.SET_NULL, null=True, related_name='furniture'
+        'Category', on_delete=models.SET_NULL,
+        null=True, related_name='furniture'
     )
     company = models.ForeignKey(
-        'Company', on_delete=models.SET_NULL, null=True, related_name='furniture'
+        'Company', on_delete=models.SET_NULL,
+        null=True, related_name='furniture'
     )
     color = models.ManyToManyField(
         'Color', related_name='furniture', through='FurnitureColor'
@@ -55,6 +57,7 @@ class Furniture(BaseModel):
         'Material', related_name='furniture', through='FurnitureMaterial'
     )
     produced_date = models.DateField()
+    is_active = models.BooleanField(default=True)
 
     def __str__(self) -> str:
         return self.name
@@ -67,9 +70,10 @@ class Category(BaseModel):
     """
     This class defines rows(attributes) of the Category table(class).
     """
-    name = models.CharField(max_length=150)
+    name = models.CharField(max_length=150, unique=True)
     slug = models.CharField(max_length=160)
     description = models.TextField()
+    is_active = models.BooleanField(default=True)
 
     def __str__(self) -> str:
         return self.name
@@ -82,10 +86,11 @@ class Company(BaseModel):
     """
     This class defines rows(attributes) of the Company table(class).
     """
-    name = models.CharField(max_length=150)
+    name = models.CharField(max_length=150, unique=True)
     slug = models.CharField(max_length=160)
     ceo = models.CharField(max_length=100)
     staff = models.PositiveIntegerField()
+    is_active = models.BooleanField(default=True)
 
     def __str__(self) -> str:
         return self.name
@@ -98,40 +103,42 @@ class Material(BaseModel):
     """
     This class defines rows(attributes) of the Material table(class).
     """
-    material = models.CharField(max_length=150)
+    material = models.CharField(max_length=150, unique=True)
     slug = models.CharField(max_length=160)
 
     def __str__(self) -> str:
         return self.material
-    
+
     def get_absolute_url(self):
         return reverse("material_detail", args=[self.slug])
-    
+
 
 class Color(BaseModel):
     """
     This class defines rows(attributes) of the Color table(class).
     """
-    color = models.CharField(max_length=150)
+    color = models.CharField(max_length=150, unique=True)
     slug = models.CharField(max_length=160)
 
     def __str__(self) -> str:
         return self.color
-    
+
     def get_absolute_url(self):
         return reverse("material_detail", args=[self.slug])
 
 
 class FurnitureMaterial(models.Model):
     """
-    This class links the Furniture and 
+    This class links the Furniture and
     the Material models together(M2M link table).
     """
     furniture = models.ForeignKey(
-        Furniture, on_delete=models.CASCADE, related_name='furniture_fur_mat_link'
+        Furniture, on_delete=models.CASCADE,
+        related_name='furniture_fur_mat_link'
     )
     material = models.ForeignKey(
-        Material, on_delete=models.CASCADE, related_name='material_fur_mat_link'
+        Material, on_delete=models.CASCADE,
+        related_name='material_fur_mat_link'
     )
 
     def __str__(self) -> str:
@@ -140,11 +147,12 @@ class FurnitureMaterial(models.Model):
 
 class FurnitureColor(models.Model):
     """
-    This class links the Furniture and 
+    This class links the Furniture and
     the Color models together(M2M link table).
     """
     furniture = models.ForeignKey(
-        Furniture, on_delete=models.CASCADE, related_name='furniture_fur_col_link'
+        Furniture, on_delete=models.CASCADE,
+        related_name='furniture_fur_col_link'
     )
     color = models.ForeignKey(
         Color, on_delete=models.CASCADE, related_name='color_fur_col_link'
