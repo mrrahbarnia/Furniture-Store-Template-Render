@@ -1,3 +1,6 @@
+"""
+Store app admin panel config.
+"""
 from django.contrib import admin
 
 from .models import (
@@ -6,14 +9,18 @@ from .models import (
     Company,
     Material,
     Category,
+    Rating,
     FurnitureColor,
-    FurnitureMaterial
+    FurnitureMaterial,
+    FurnitureRating
 )
 
 admin.site.register(Furniture)
 admin.site.register(Color)
+admin.site.register(Rating)
 admin.site.register(Company)
 admin.site.register(Material)
 admin.site.register(Category)
 admin.site.register(FurnitureColor)
 admin.site.register(FurnitureMaterial)
+admin.site.register(FurnitureRating)

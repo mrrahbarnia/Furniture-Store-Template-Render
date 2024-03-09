@@ -54,16 +54,9 @@ MIDDLEWARE = [
 ]
 
 if DEBUG:
-    import socket
-    MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
-    INSTALLED_APPS.append('debug_toolbar')
+    MIDDLEWARE.append('silk.middleware.SilkyMiddleware')
     INSTALLED_APPS.append('django_extensions')
-    hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
-    INTERNAL_IPS = [ip[:-1] + '1' for ip in ips] + ['127.0.0.1']
-
-
-
-
+    INSTALLED_APPS.append('silk')
 
 ROOT_URLCONF = 'app.urls'
 
@@ -154,7 +147,8 @@ AUTH_USER_MODEL = 'users.BaseUser'
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.SessionAuthentication'
+        'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication'
-    )
+    ),
+    'COERCE_DECIMAL_TO_STRING': False,
 }

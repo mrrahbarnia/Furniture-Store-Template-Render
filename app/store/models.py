@@ -5,6 +5,8 @@ import os
 import uuid
 
 from django.db import models
+from django.db.models import Q
+from django.core.exceptions import ValidationError
 from django.urls import reverse
 from django.core.validators import (
     MaxValueValidator,
@@ -12,6 +14,7 @@ from django.core.validators import (
 )
 
 from common.models import BaseModel
+from users.models import BaseUser
 
 
 def furniture_image_file_path(instance, filename):
@@ -32,10 +35,8 @@ class Furniture(BaseModel):
     slug = models.CharField(max_length=160)
     price = models.DecimalField(max_digits=8, decimal_places=2)
     stock = models.PositiveIntegerField(default=0)
-    ratings = models.PositiveIntegerField(
-        validators=[
-            MinValueValidator(limit_value=1), MaxValueValidator(limit_value=10)
-        ]
+    rating = models.ManyToManyField(
+        'Rating', related_name='furniture_rating', through='FurnitureRating'
     )
     views = models.PositiveIntegerField(default=0, null=True, blank=True)
     image = models.ImageField(
@@ -44,17 +45,18 @@ class Furniture(BaseModel):
     description = models.TextField()
     category = models.ForeignKey(
         'Category', on_delete=models.SET_NULL,
-        null=True, related_name='furniture'
+        null=True, related_name='furniture_category'
     )
     company = models.ForeignKey(
         'Company', on_delete=models.SET_NULL,
-        null=True, related_name='furniture'
+        null=True, related_name='furniture_company'
     )
     color = models.ManyToManyField(
-        'Color', related_name='furniture', through='FurnitureColor'
+        'Color', related_name='furniture_color', through='FurnitureColor'
     )
     material = models.ManyToManyField(
-        'Material', related_name='furniture', through='FurnitureMaterial'
+        'Material', related_name='furniture_material',
+        through='FurnitureMaterial'
     )
     produced_date = models.DateField()
     is_active = models.BooleanField(default=True)
@@ -64,6 +66,26 @@ class Furniture(BaseModel):
 
     def get_absolute_url(self):
         return reverse("furniture_detail", args=[self.slug])
+
+
+class Rating(BaseModel):
+    """
+    This class defines rows(attributes) of the Rating table(class).
+    """
+    """
+    IF a user was deleted, his ratings for any furniture not delete at all.
+    this logic used for statistics of the
+    popularity of the specific furniture
+    """
+    user = models.ForeignKey(
+        BaseUser, on_delete=models.SET_NULL, null=True, related_name='rating'
+    )
+    rating = models.SmallIntegerField(validators=[
+            MinValueValidator(limit_value=1), MaxValueValidator(limit_value=10)
+        ])
+
+    def __str__(self) -> str:
+        return f'{self.user} >> {self.rating}'
 
 
 class Category(BaseModel):
@@ -144,6 +166,9 @@ class FurnitureMaterial(models.Model):
     def __str__(self) -> str:
         return f'{self.furniture.name} >> {self.material.material}'
 
+    class Meta:
+        unique_together = ('furniture', 'material')
+
 
 class FurnitureColor(models.Model):
     """
@@ -160,3 +185,37 @@ class FurnitureColor(models.Model):
 
     def __str__(self) -> str:
         return f'{self.furniture.name} >> {self.color.color}'
+
+    class Meta:
+        unique_together = ('furniture', 'color')
+
+
+class FurnitureRating(models.Model):
+    """
+    This class links the Furniture and
+    the Rating models together(M2M link table).
+    """
+    furniture = models.ForeignKey(
+        Furniture, on_delete=models.SET_NULL, null=True,
+        related_name='furniture_fur_rat_link'
+    )
+    rating = models.ForeignKey(
+        Rating, on_delete=models.SET_NULL, null=True,
+        related_name='color_fur_col_link'
+    )
+
+    class Meta:
+        unique_together = ('furniture', 'rating')
+
+    def clean(self) -> None:
+        """
+        Every user can only rate a specific furniture one time not more.
+        """
+        qs = (Q(rating__user=self.rating.user) & Q(furniture=self.furniture))
+        if FurnitureRating.objects.filter(qs).exists():
+            raise ValidationError(
+                'Only one rating must be exist for users and furniture.'
+            )
+
+    def __str__(self) -> str:
+        return f'{self.rating} >> {self.furniture}'

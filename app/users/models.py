@@ -14,7 +14,7 @@ from common.models import BaseModel
 class BaseUserManager(BUM):
 
     def create_user(
-            self, email, is_active=True, is_admin=False, password=None
+            self, email, is_active=True, is_staff=False, password=None
     ):
         """Creating normal users with the given email and password."""
         if not email:
@@ -22,7 +22,7 @@ class BaseUserManager(BUM):
 
         user = self.model(
             email=self.normalize_email(email.lower()),
-            is_active=is_active, is_admin=is_admin
+            is_active=is_active, is_staff=is_staff
         )
 
         if password is not None:
@@ -43,6 +43,7 @@ class BaseUserManager(BUM):
             password=password,
         )
 
+        user.is_superuser = True
         user.save(using=self._db)
 
         return user

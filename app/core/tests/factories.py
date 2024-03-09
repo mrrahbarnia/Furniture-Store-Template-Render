@@ -1,7 +1,7 @@
 """
 Generating fake data for testing with factory boy module.
 """
-import random
+# import random
 import factory
 from faker import Faker
 from django.utils.text import slugify
@@ -13,6 +13,7 @@ from store.models import (
     Company,
     Material,
     Color,
+    # Rating,
     FurnitureColor,
     FurnitureMaterial
 )
@@ -68,7 +69,6 @@ class FurnitureFactory(factory.django.DjangoModelFactory):
     slug = slugify(name)
     price = 10.00
     stock = fake.pyint()
-    rating = random.randint(1, 10)
     views = fake.pyint()
     image = fake.url()
     description = fake.paragraph(nb_sentences=1)
