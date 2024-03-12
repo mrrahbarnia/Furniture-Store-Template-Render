@@ -28,24 +28,6 @@ register(FurnitureMaterialFactory)
 
 
 @pytest.fixture
-def normal_user():
-    """Create and return normal user."""
-    return BaseUser.objects.create_user(
-        email='normal@example.com',
-        password='1234@example.com'
-    )
-
-
-@pytest.fixture
-def admin_user():
-    """Create and return admin user."""
-    return BaseUser.objects.create_superuser(
-        email='admin@example.com',
-        password='1234@example.com'
-    )
-
-
-@pytest.fixture
 def anon_client():
     """
     Create and return anonymous
@@ -61,7 +43,10 @@ def normal_client():
     client as a normal user.
     """
     client = APIClient()
-    user = normal_user()
+    user = BaseUser.objects.create_user(
+        email='normal@example.com',
+        password='1234@example.com'
+    )
     client.force_authenticate(user=user)
     return client
 
@@ -73,6 +58,9 @@ def admin_client():
     client as a admin user.
     """
     client = APIClient()
-    user = admin_user()
+    user = BaseUser.objects.create_superuser(
+        email='normal@example.com',
+        password='1234@example.com'
+    )
     client.force_authenticate(user=user)
     return client

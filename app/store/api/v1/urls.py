@@ -13,5 +13,10 @@ urlpatterns = [
         'furniture/<str:slug>/',
         apis.FurnitureDetailApiView.as_view(),
         name='furniture_detail'
+    ),
+    path(
+        'furniture/<str:slug>/rate/',
+        apis.RatingFurnitureApiView.as_view(),
+        name='furniture_rate'
     )
 ]

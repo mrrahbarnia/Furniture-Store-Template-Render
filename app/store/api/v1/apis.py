@@ -2,9 +2,13 @@
 Store app API's.
 """
 from django.urls import reverse
+from django.core.validators import (
+    MinValueValidator,
+    MaxValueValidator
+)
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import serializers, status
+from rest_framework import serializers, status, permissions
 from drf_spectacular.utils import extend_schema
 
 # from django.urls import reverse
@@ -13,7 +17,8 @@ from common.pagination import (
     get_paginated_response_context
 )
 from core.services.store import (
-    get_furniture_by_slug
+    get_furniture_by_slug,
+    rate_furniture
 )
 from core.selectors.store import (
     list_active_furniture
@@ -37,6 +42,7 @@ class FurnitureApiView(APIView):
         company = serializers.CharField(source='company.name')
         category = serializers.CharField(source='category.name')
         abs_url = serializers.SerializerMethodField()
+        average_rating = serializers.FloatField()
 
         def get_abs_url(self, furniture):
             request = self.context.get('request')
@@ -61,8 +67,10 @@ class FurnitureApiView(APIView):
 
 
 class FurnitureDetailApiView(APIView):
+    """Furniture detail API view."""
 
     class FurnitureDetailOutputSerializer(serializers.Serializer):
+        """Serializing data for furniture detail API."""
         name = serializers.CharField(max_length=150)
         price = serializers.DecimalField(max_digits=8, decimal_places=2)
         stock = serializers.IntegerField()
@@ -88,3 +96,36 @@ class FurnitureDetailApiView(APIView):
             )
         response = self.FurnitureDetailOutputSerializer(furniture).data
         return Response(response, status=status.HTTP_200_OK)
+
+
+class RatingFurnitureApiView(APIView):
+    """Rating furniture with authenticated users."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    class RateSerializer(serializers.Serializer):
+        """Validating rating limitation in serializer layer."""
+        rate = serializers.IntegerField(
+            validators=[
+                MinValueValidator(limit_value=0),
+                MaxValueValidator(limit_value=10)
+            ],
+            required=True
+        )
+
+    @extend_schema(request=RateSerializer)
+    def post(
+            self, request, slug:str
+    ) -> Response | serializers.ValidationError:
+        serializer = self.RateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            rate_furniture(
+                user=request.user,
+                slug=slug,
+                rate=serializer.validated_data.get('rate')
+            )
+        except Exception as ex:
+            raise serializers.ValidationError(
+                {'error': f'{ex}'}
+            )
+        return Response(status=status.HTTP_200_OK)

@@ -35,7 +35,7 @@ class Furniture(BaseModel):
     slug = models.CharField(max_length=160)
     price = models.DecimalField(max_digits=8, decimal_places=2)
     stock = models.PositiveIntegerField(default=0)
-    rating = models.ManyToManyField(
+    ratings = models.ManyToManyField(
         'Rating', related_name='furniture_rating', through='FurnitureRating'
     )
     views = models.PositiveIntegerField(default=0, null=True, blank=True)
@@ -81,7 +81,7 @@ class Rating(BaseModel):
         BaseUser, on_delete=models.SET_NULL, null=True, related_name='rating'
     )
     rating = models.SmallIntegerField(validators=[
-            MinValueValidator(limit_value=1), MaxValueValidator(limit_value=10)
+            MinValueValidator(limit_value=0), MaxValueValidator(limit_value=10)
         ])
 
     def __str__(self) -> str:
