@@ -1,7 +1,35 @@
+<!DOCTYPE html>
+<html>
+
+
+    <style>
+        h1 {
+            color: red;
+        }
+
+    </style>
+</html>
 <body>
-    <h1>
-        {% for i in furniture %}
-            {{i}}
-        {% endfor %}
-    </h1>
+
+    <h1 id="salam">Salam</h1>
+
+
+<script>
+
+    let redValue, blueValue, greenValue
+    let h1Elem = document.getElementById('salam')
+
+    setInterval(function () {
+        redValue = Math.floor(Math.random() * 255)
+        blueValue = Math.floor(Math.random() * 255)
+        greenValue = Math.floor(Math.random() * 255)
+
+        let rgb = 'rgb(' + redValue + ',' + blueValue + ',' + greenValue + ')'
+        // console.log(rgb)
+        h1Elem.style.color = rgb
+    }, 2000)
+
+
+
+</script>
 </body>

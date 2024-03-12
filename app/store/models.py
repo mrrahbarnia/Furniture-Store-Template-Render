@@ -6,6 +6,7 @@ import uuid
 
 from django.db import models
 from django.db.models import Q
+from django.db.models.functions import Lower
 from django.core.exceptions import ValidationError
 from django.urls import reverse
 from django.core.validators import (
@@ -67,6 +68,13 @@ class Furniture(BaseModel):
     def get_absolute_url(self):
         return reverse("furniture_detail", args=[self.slug])
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                Lower('name'), name='unique_furniture_name'
+            )
+        ]
+
 
 class Rating(BaseModel):
     """
@@ -87,6 +95,16 @@ class Rating(BaseModel):
     def __str__(self) -> str:
         return f'{self.user} >> {self.rating}'
 
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=Q(rating__gte=0, rating__lte=10),
+                name='check_rating_limitation',
+                violation_error_message='Rating invalid...\
+                    (Less than 10 and more than 0)'
+            )
+        ]
+
 
 class Category(BaseModel):
     """
@@ -102,6 +120,13 @@ class Category(BaseModel):
 
     def get_absolute_url(self):
         return reverse("category_detail", args=[self.slug])
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                Lower('name'), name='unique_category'
+            )
+        ]
 
 
 class Company(BaseModel):
@@ -120,6 +145,13 @@ class Company(BaseModel):
     def get_absolute_url(self):
         return reverse("company_detail", args=[self.slug])
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                Lower('name'), name='unique_company'
+            )
+        ]
+
 
 class Material(BaseModel):
     """
@@ -134,6 +166,13 @@ class Material(BaseModel):
     def get_absolute_url(self):
         return reverse("material_detail", args=[self.slug])
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                Lower('material').desc(), name='unique_material'
+            )
+        ]
+
 
 class Color(BaseModel):
     """
@@ -147,6 +186,13 @@ class Color(BaseModel):
 
     def get_absolute_url(self):
         return reverse("material_detail", args=[self.slug])
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                Lower('color'), name='unique_color'
+            )
+        ]
 
 
 class FurnitureMaterial(models.Model):

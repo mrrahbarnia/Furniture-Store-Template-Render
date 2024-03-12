@@ -20,8 +20,9 @@ def get_furniture_by_slug(*, slug: str) -> Furniture:
     furniture.save(update_fields=['views'])
     return furniture
 
+
 @transaction.atomic
-def rate_furniture(*, user:BaseUser, rate:int, slug:str):
+def rate_furniture(*, user: BaseUser, rate: int, slug: str):
     """
     This business logic execute three queries:
     1 => Create and returning a rating object.

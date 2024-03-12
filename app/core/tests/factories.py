@@ -7,14 +7,14 @@ from faker import Faker
 from django.utils.text import slugify
 from django.utils import timezone
 
-from users.models import BaseUser
+# from users.models import BaseUser
 from store.models import (
     Furniture,
     Category,
     Company,
     Material,
     Color,
-    Rating,
+    # Rating,
     FurnitureColor,
     FurnitureMaterial
 )
@@ -112,7 +112,7 @@ class FurnitureColorFactory(factory.django.DjangoModelFactory):
 
 #     class Meta:
 #         model = BaseUser
-    
+
 #     email = fake.email()
 
 
@@ -120,6 +120,6 @@ class FurnitureColorFactory(factory.django.DjangoModelFactory):
 
 #     class Meta:
 #         model = Rating
-    
+
 #     user = factory.SubFactory(UserFactory)
 #     rating = fake.pyint(min_value=0, max_value=10)

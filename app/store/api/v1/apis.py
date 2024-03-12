@@ -114,7 +114,7 @@ class RatingFurnitureApiView(APIView):
 
     @extend_schema(request=RateSerializer)
     def post(
-            self, request, slug:str
+            self, request, slug: str
     ) -> Response | serializers.ValidationError:
         serializer = self.RateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

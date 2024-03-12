@@ -19,10 +19,12 @@ def get_furniture_detail_url(*, slug: str) -> str:
     detail url based on it's slug."""
     return reverse('store_api:furniture_detail', args=[slug])
 
-def rate_furniture_url(*, slug:str) ->str:
+
+def rate_furniture_url(*, slug: str) -> str:
     """Creating and returning a furniture
     rating url based on it's slug."""
     return reverse('store_api:furniture_rate', args=[slug])
+
 
 class TestPublicEndpoints:
     """
@@ -51,7 +53,7 @@ class TestPublicEndpoints:
 
         assert response.status_code == status.HTTP_200_OK
         assert sample_furniture.views == 1
-    
+
     def test_rate_furniture_unsuccessfully(
             self, anon_client, furniture_factory
     ):
