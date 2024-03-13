@@ -30,7 +30,7 @@ def rate_furniture(*, user: BaseUser, rate: int, slug: str):
     3 => Assign that rating to a specific furniture.
     """
     rating: Rating = Rating.objects.create(user=user, rating=rate)
-    furniture = Furniture.objects.get(slug=slug)
+    furniture = Furniture.objects.get(slug=slug, is_active=True)
     furniture_rate = FurnitureRating(rating=rating, furniture=furniture)
     furniture_rate.full_clean()
     furniture_rate.save()
