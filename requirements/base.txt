@@ -9,3 +9,4 @@ pytest-django==4.8.0
 flake8==7.0.0
 factory-boy==3.3.0
 pytest-factoryboy==2.7.0
+django-filter

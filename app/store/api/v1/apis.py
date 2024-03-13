@@ -32,6 +32,15 @@ class FurnitureApiView(APIView):
         """Paginating data to get 10 items per page."""
         default_limit = 10
 
+    class FilterInputSerializer(serializers.Serializer):
+        """Filtering furniture with query parameters."""
+        name__icontains = serializers.CharField(
+            max_length=250, required=False
+        )
+        price__range = serializers.CharField(
+            max_length=250, required=False
+        )
+
     class FurnitureOutputSerializer(serializers.Serializer):
         """Output serializer for furniture model."""
         name = serializers.CharField(max_length=150)
@@ -49,10 +58,23 @@ class FurnitureApiView(APIView):
             path = reverse('store_api:furniture_detail', args=[furniture.slug])
             return request.build_absolute_uri(path)
 
-    @extend_schema(responses=FurnitureOutputSerializer)
+    @extend_schema(
+            responses=FurnitureOutputSerializer,
+            parameters=[FilterInputSerializer]
+    )
     def get(self, request) -> Response | serializers.ValidationError:
+        """
+        price__range parameter => Enter exact two digits comma separated.
+        examples => "19, 25" --- "19, " --- ", 25"
+        """
+        filtered_serializer = self.FilterInputSerializer(
+            data=request.query_params
+        )
+        filtered_serializer.is_valid(raise_exception=True)
         try:
-            furniture = list_active_furniture()
+            furniture = list_active_furniture(
+                filters=filtered_serializer.validated_data
+            )
         except Exception as ex:
             raise serializers.ValidationError(
                 {'error': f'{ex}'}

@@ -29,6 +29,7 @@ LOCAL_APPS = [
 THIRD_PARTY_APP = [
     'rest_framework',
     'drf_spectacular',
+    'django_filters',
 
 ]
 

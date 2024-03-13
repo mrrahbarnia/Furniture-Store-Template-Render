@@ -3,6 +3,7 @@ Integration testing store app endpoints.
 """
 import pytest
 
+from decimal import Decimal
 from typing import Final
 from django.urls import reverse
 from rest_framework import status
@@ -68,6 +69,38 @@ class TestPublicEndpoints:
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
         assert sample_furniture.ratings.count() == 0
+
+    def test_filtering_furniture_by_query_params(
+            self, anon_client, furniture_factory
+    ):
+        """Test filtering furniture by query parameters."""
+        furniture_factory(
+            name='Desk', price=Decimal('10.00')
+        )
+        furniture_factory(
+            name='Table', price=Decimal('12.00')
+        )
+        furniture_factory(
+            name='Bed', price=Decimal('15.00')
+        )
+        sample_furniture4: Furniture = furniture_factory(
+            name='Magic Sofa', price=Decimal('28.00')
+        )
+
+        response = anon_client.get(
+            FURNITURE_LIST_URL, {'name__icontains': 'magi'}
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data['results'][0]['name'] == sample_furniture4.name
+        assert len(response.data['results']) == 1
+
+        response = anon_client.get(
+            FURNITURE_LIST_URL, {'price__range': '11, 20'}
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data['results']) == 2
 
 
 class TestPrivateEndpoints:
