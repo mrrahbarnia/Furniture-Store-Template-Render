@@ -34,7 +34,6 @@ class Command(BaseCommand):
                 sample_category = Category.objects.create(
                     name=category_name,
                     slug=slugify(category_name),
-                    description=fake.paragraph(nb_sentences=1)
                 )
 
                 company_name: str = fake.name()
@@ -42,6 +41,7 @@ class Command(BaseCommand):
                     name=company_name,
                     slug=slugify(company_name),
                     ceo=fake.last_name(),
+                    description=fake.paragraph(nb_sentences=1),
                     staff=fake.pyint()
                 )
 
@@ -99,11 +99,14 @@ class Command(BaseCommand):
                     sample_material1, sample_material2
                 )
                 sample_furniture.ratings.add(sample_rating1, sample_rating2)
+                self.stdout.write(f'{i} object created...')
             except Exception:
-                pass
-
-            self.stdout.write(f'{i} object created...')
+                self.stdout.write(
+                    self.style.ERROR(
+                        f'Object number {i} has not been created.'
+                    )
+                )
 
         self.stdout.write(
-            self.style.SUCCESS('Fake data generated successfully.')
+            self.style.SUCCESS('Finished generating fake data.')
         )

@@ -29,7 +29,6 @@ class CategoryFactory(factory.django.DjangoModelFactory):
 
     name = factory.Sequence(lambda n: "%s" % (fake.name()))
     slug = slugify(name)
-    description = fake.paragraph(nb_sentences=1)
 
 
 class CompanyFactory(factory.django.DjangoModelFactory):
@@ -41,6 +40,7 @@ class CompanyFactory(factory.django.DjangoModelFactory):
     slug = slugify(name)
     ceo = fake.last_name()
     staff = fake.pyint()
+    description = fake.paragraph(nb_sentences=1)
 
 
 class MaterialFactory(factory.django.DjangoModelFactory):

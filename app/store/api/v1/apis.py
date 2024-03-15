@@ -1,6 +1,8 @@
 """
 Store app API's.
 """
+from typing import Any
+from django.db.models import QuerySet
 from django.urls import reverse
 from django.core.validators import (
     MinValueValidator,
@@ -11,18 +13,23 @@ from rest_framework.response import Response
 from rest_framework import serializers, status, permissions
 from drf_spectacular.utils import extend_schema
 
-# from django.urls import reverse
 from common.pagination import (
     LimitOffsetPagination,
     get_paginated_response_context
 )
 from core.services.store import (
     get_furniture_by_slug,
-    rate_furniture
+    rate_furniture,
+    activate_company,
+    deactivate_company
 )
 from core.selectors.store import (
-    list_active_furniture
+    list_active_furniture,
+    list_active_companies,
+    list_all_companies
 )
+from .serializers import CompanyBaseSerializer
+from ...models import Furniture, Company
 
 
 class FurnitureApiView(APIView):
@@ -62,7 +69,9 @@ class FurnitureApiView(APIView):
             responses=FurnitureOutputSerializer,
             parameters=[FilterInputSerializer]
     )
-    def get(self, request) -> Response | serializers.ValidationError:
+    def get(
+        self, request, *args: Any, **kwargs: Any
+    ) -> Response | serializers.ValidationError:
         """
         price__range parameter => Enter exact two digits comma separated.
         examples => "19, 25" --- "19, " --- ", 25"
@@ -72,7 +81,7 @@ class FurnitureApiView(APIView):
         )
         filtered_serializer.is_valid(raise_exception=True)
         try:
-            furniture = list_active_furniture(
+            furniture: QuerySet[Furniture] = list_active_furniture(
                 filters=filtered_serializer.validated_data
             )
         except Exception as ex:
@@ -105,13 +114,13 @@ class FurnitureDetailApiView(APIView):
 
     @extend_schema(responses=FurnitureDetailOutputSerializer)
     def get(
-        self, request, slug: str
+        self, request, slug: str, *args: Any, **kwargs: Any
     ) -> Response | serializers.ValidationError:
         """
         Getting a furniture by it's specific slug.
         """
         try:
-            furniture = get_furniture_by_slug(slug=slug)
+            furniture: Furniture = get_furniture_by_slug(slug=slug)
         except Exception as ex:
             raise serializers.ValidationError(
                 {'error': f'{ex}'}
@@ -136,7 +145,7 @@ class RatingFurnitureApiView(APIView):
 
     @extend_schema(request=RateSerializer)
     def post(
-            self, request, slug: str
+            self, request, slug: str, *args: Any, **kwargs: Any
     ) -> Response | serializers.ValidationError:
         serializer = self.RateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -146,6 +155,103 @@ class RatingFurnitureApiView(APIView):
                 slug=slug,
                 rate=serializer.validated_data.get('rate')
             )
+        except Exception as ex:
+            raise serializers.ValidationError(
+                {'error': f'{ex}'}
+            )
+        return Response(status=status.HTTP_200_OK)
+
+
+class ActiveCompaniesApiView(APIView):
+
+    class Pagination(LimitOffsetPagination):
+        default_limit = 10
+
+    @extend_schema(responses=CompanyBaseSerializer)
+    def get(
+        self, request, *args: Any, **kwargs: Any
+    ) -> Response | serializers.ValidationError:
+        """Listing all active companies."""
+        try:
+            active_companies: QuerySet[Company] = list_active_companies()
+        except Exception as ex:
+            raise serializers.ValidationError(
+                {'error': f'{ex}'}
+            )
+        return get_paginated_response_context(
+            pagination_class=self.Pagination,
+            serializer_class=CompanyBaseSerializer,
+            queryset=active_companies,
+            request=request,
+            view=self
+        )
+
+
+class CompanyApiView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    class AllCompanySerializer(CompanyBaseSerializer):
+        # is_active = serializers.BooleanField()
+        activate_deactivate_url = serializers.SerializerMethodField()
+
+        def get_activate_deactivate_url(self, company: Company):
+            request = self.context.get('request')
+            if not company.is_active:
+                path = reverse(
+                    'store_api:activate_company', args=[company.slug]
+                )
+            elif company.is_active:
+                path = reverse(
+                    'store_api:deactivate_company', args=[company.slug]
+                )
+            return request.build_absolute_uri(path)
+
+    def get(
+            self, request, *args: Any, **kwargs: Any
+    ) -> Response | serializers.ValidationError:
+        """Listing all companies with AdminUser
+        permission for activating or deactivating them."""
+        try:
+            all_companies: QuerySet[Company] = list_all_companies()
+        except Exception as ex:
+            raise serializers.ValidationError(
+                {'error': f'{ex}'}
+            )
+        response = self.AllCompanySerializer(
+            all_companies, many=True, context={'request': request}
+        ).data
+        return Response(response, status=status.HTTP_200_OK)
+
+
+class ActivateCompanyApiView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def get(
+            self, request, slug: str
+    ) -> Response | serializers.ValidationError:
+        """
+        Activating an existing company by it's slug.
+        """
+        try:
+            activate_company(slug=slug)
+        except Exception as ex:
+            raise serializers.ValidationError(
+                {'error': f'{ex}'}
+            )
+        return Response(status=status.HTTP_200_OK)
+
+
+class DeactivateCompanyApiView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def get(
+            self, request, slug: str
+    ) -> Response | serializers.ValidationError:
+        """
+        Deactivating an existing company by it's slug.
+        """
+        try:
+            deactivate_company(slug=slug)
         except Exception as ex:
             raise serializers.ValidationError(
                 {'error': f'{ex}'}

@@ -14,6 +14,7 @@ from django.core.validators import (
     MinValueValidator
 )
 
+from core.selectors.managers import IsActiveManager
 from common.models import BaseModel
 from users.models import BaseUser
 
@@ -62,10 +63,13 @@ class Furniture(BaseModel):
     produced_date = models.DateField()
     is_active = models.BooleanField(default=True)
 
+    objects = models.Manager()
+    active = IsActiveManager()  # Furniture.active.all()
+
     def __str__(self) -> str:
         return self.name
 
-    def get_absolute_url(self):
+    def get_absolute_url(self) -> str:
         return reverse("furniture_detail", args=[self.slug])
 
     class Meta:
@@ -112,14 +116,21 @@ class Category(BaseModel):
     """
     name = models.CharField(max_length=150, unique=True)
     slug = models.CharField(max_length=160)
-    description = models.TextField()
     is_active = models.BooleanField(default=True)
+
+    objects = models.Manager()
+    active = IsActiveManager()  # Category.active.all()
 
     def __str__(self) -> str:
         return self.name
 
-    def get_absolute_url(self):
+    def get_absolute_url(self) -> str:
         return reverse("category_detail", args=[self.slug])
+
+    def clean(self):
+        """Capitalizing name field while saving
+        for preventing from duplicate values."""
+        self.name = self.name.capitalize()
 
     class Meta:
         constraints = [
@@ -137,15 +148,25 @@ class Company(BaseModel):
     slug = models.CharField(max_length=160)
     ceo = models.CharField(max_length=100)
     staff = models.PositiveIntegerField()
+    description = models.TextField()
     is_active = models.BooleanField(default=True)
+
+    objects = models.Manager()
+    active = IsActiveManager()  # Company.active.all()
 
     def __str__(self) -> str:
         return self.name
 
-    def get_absolute_url(self):
+    def get_absolute_url(self) -> str:
         return reverse("company_detail", args=[self.slug])
 
+    def clean(self):
+        """Capitalizing name field while saving
+        for preventing from duplicate values."""
+        self.name = self.name.capitalize()
+
     class Meta:
+        verbose_name_plural = 'companies'
         constraints = [
             models.UniqueConstraint(
                 Lower('name'), name='unique_company'
@@ -163,8 +184,13 @@ class Material(BaseModel):
     def __str__(self) -> str:
         return self.material
 
-    def get_absolute_url(self):
+    def get_absolute_url(self) -> str:
         return reverse("material_detail", args=[self.slug])
+
+    def clean(self):
+        """Capitalizing material field while saving
+        for preventing from duplicate values."""
+        self.material = self.material.capitalize()
 
     class Meta:
         constraints = [
@@ -184,8 +210,13 @@ class Color(BaseModel):
     def __str__(self) -> str:
         return self.color
 
-    def get_absolute_url(self):
+    def get_absolute_url(self) -> str:
         return reverse("material_detail", args=[self.slug])
+
+    def clean(self):
+        """Capitalizing color field while saving
+        for preventing from duplicate values."""
+        self.color = self.color.capitalize()
 
     class Meta:
         constraints = [

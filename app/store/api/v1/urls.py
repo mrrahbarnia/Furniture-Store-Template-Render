@@ -18,5 +18,21 @@ urlpatterns = [
         'furniture/<str:slug>/rate/',
         apis.RatingFurnitureApiView.as_view(),
         name='furniture_rate'
+    ),
+    path(
+        'company/active/',
+        apis.ActiveCompaniesApiView.as_view(),
+        name='active_company'
+    ),
+    path('company/all/', apis.CompanyApiView.as_view(), name='company'),
+    path(
+        'company/<str:slug>/activate/',
+        apis.ActivateCompanyApiView.as_view(),
+        name='activate_company'
+    ),
+    path(
+        'company/<str:slug>/deactivate/',
+        apis.DeactivateCompanyApiView.as_view(),
+        name='deactivate_company'
     )
 ]
