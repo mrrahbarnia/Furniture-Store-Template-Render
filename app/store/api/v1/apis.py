@@ -21,25 +21,28 @@ from core.services.store import (
     get_furniture_by_slug,
     rate_furniture,
     activate_company,
-    deactivate_company
+    deactivate_company,
+    activate_furniture,
+    deactivate_furniture
 )
 from core.selectors.store import (
     list_active_furniture,
     list_active_companies,
-    list_all_companies
+    list_all_companies,
+    list_all_furniture
 )
 from .serializers import CompanyBaseSerializer
 from ...models import Furniture, Company
 
 
-class FurnitureApiView(APIView):
+class ActiveFurnitureApiView(APIView):
     """Furniture api for listing them."""
 
     class Pagination(LimitOffsetPagination):
         """Paginating data to get 10 items per page."""
         default_limit = 10
 
-    class FilterInputSerializer(serializers.Serializer):
+    class ActiveFilterInputSerializer(serializers.Serializer):
         """Filtering furniture with query parameters."""
         name__icontains = serializers.CharField(
             max_length=250, required=False
@@ -48,7 +51,7 @@ class FurnitureApiView(APIView):
             max_length=250, required=False
         )
 
-    class FurnitureOutputSerializer(serializers.Serializer):
+    class ActiveFurnitureOutputSerializer(serializers.Serializer):
         """Output serializer for furniture model."""
         name = serializers.CharField(max_length=150)
         price = serializers.DecimalField(max_digits=8, decimal_places=2)
@@ -66,8 +69,8 @@ class FurnitureApiView(APIView):
             return request.build_absolute_uri(path)
 
     @extend_schema(
-            responses=FurnitureOutputSerializer,
-            parameters=[FilterInputSerializer]
+            responses=ActiveFurnitureOutputSerializer,
+            parameters=[ActiveFilterInputSerializer]
     )
     def get(
         self, request, *args: Any, **kwargs: Any
@@ -76,7 +79,7 @@ class FurnitureApiView(APIView):
         price__range parameter => Enter exact two digits comma separated.
         examples => "19, 25" --- "19, " --- ", 25"
         """
-        filtered_serializer = self.FilterInputSerializer(
+        filtered_serializer = self.ActiveFilterInputSerializer(
             data=request.query_params
         )
         filtered_serializer.is_valid(raise_exception=True)
@@ -90,7 +93,7 @@ class FurnitureApiView(APIView):
             )
         return get_paginated_response_context(
             pagination_class=self.Pagination,
-            serializer_class=self.FurnitureOutputSerializer,
+            serializer_class=self.ActiveFurnitureOutputSerializer,
             queryset=furniture,
             request=request,
             view=self
@@ -227,7 +230,7 @@ class ActivateCompanyApiView(APIView):
     permission_classes = [permissions.IsAdminUser]
 
     def get(
-            self, request, slug: str
+            self, request, slug: str, *args: Any, **kwargs: Any
     ) -> Response | serializers.ValidationError:
         """
         Activating an existing company by it's slug.
@@ -245,13 +248,86 @@ class DeactivateCompanyApiView(APIView):
     permission_classes = [permissions.IsAdminUser]
 
     def get(
-            self, request, slug: str
+            self, request, slug: str, *args: Any, **kwargs: None
     ) -> Response | serializers.ValidationError:
         """
         Deactivating an existing company by it's slug.
         """
         try:
             deactivate_company(slug=slug)
+        except Exception as ex:
+            raise serializers.ValidationError(
+                {'error': f'{ex}'}
+            )
+        return Response(status=status.HTTP_200_OK)
+
+
+class FurnitureApiView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    class Pagination(LimitOffsetPagination):
+        default_limit = 10
+
+    class FurnitureOutputSerializer(serializers.Serializer):
+        name = serializers.CharField(max_length=150)
+        price = serializers.DecimalField(max_digits=8, decimal_places=2)
+        image = serializers.ImageField()
+        company = serializers.CharField(source='company.name')
+        category = serializers.CharField(source='category.name')
+        is_active = serializers.BooleanField()
+
+    def get(
+            self, request, *args: Any, **kwargs: Any
+    ) -> Response | serializers.ValidationError:
+        """
+        Getting all furniture only by admin users.
+        """
+        try:
+            all_furniture: QuerySet[Furniture] = list_all_furniture()
+        except Exception as ex:
+            raise serializers.ValidationError(
+                {'error': f'{ex}'}
+            )
+        return get_paginated_response_context(
+            pagination_class=self.Pagination,
+            serializer_class=self.FurnitureOutputSerializer,
+            queryset=all_furniture,
+            request=request,
+            view=self
+        )
+
+
+class ActivateFurnitureApiView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def get(
+            self, request, slug: str, *args: Any, **kwargs: Any
+    ) -> Response | serializers.ValidationError:
+        """
+        Get a specific furniture by it's slug
+        and turn is_active field to True for it.
+        """
+        try:
+            activate_furniture(slug=slug)
+        except Exception as ex:
+            raise serializers.ValidationError(
+                {'error': f'{ex}'}
+            )
+        return Response(status=status.HTTP_200_OK)
+
+
+class DeactivateFurnitureApiView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def get(
+            self, request, slug: str, *args: Any, **kwargs: Any
+    ) -> Response | serializers.ValidationError:
+        """
+        Get a specific furniture by it's slug
+        and turn is_active field to False for it.
+        """
+        try:
+            deactivate_furniture(slug=slug)
         except Exception as ex:
             raise serializers.ValidationError(
                 {'error': f'{ex}'}

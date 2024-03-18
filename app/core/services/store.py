@@ -82,3 +82,59 @@ def deactivate_company(*, slug: str) -> APIException | None:
         )
     company.is_active = ~F('is_active')
     company.save(update_fields=['is_active'])
+
+
+def activate_furniture(*, slug: str) -> None:
+    """
+    Get a specific furniture by it's slug and
+    turn the is_active field to True for it
+    """
+    try:
+        furniture: Furniture = Furniture.objects.get(slug=slug)
+    except Furniture.DoesNotExist:
+        raise APIException(
+            'There is no furniture with the provided slug.'
+        )
+    except Furniture.MultipleObjectsReturned:
+        raise APIException(
+            'There are more than one furniture with the provided slug.'
+        )
+
+    if not furniture.is_active:
+        """
+        Check either the is_active field is already activated or not.
+        """
+        furniture.is_active = ~F('is_active')
+        furniture.save(update_fields=['is_active'])
+    else:
+        raise APIException(
+            'The provided furniture has already been activated.'
+        )
+
+
+def deactivate_furniture(*, slug: str) -> None:
+    """
+    Get a specific furniture by it's slug and
+    turn the is_active field to False for it
+    """
+    try:
+        furniture: Furniture = Furniture.objects.get(slug=slug)
+    except Furniture.DoesNotExist:
+        raise APIException(
+            'There is no furniture with the provided slug.'
+        )
+    except Furniture.MultipleObjectsReturned:
+        raise APIException(
+            'There are more than one furniture with the provided slug.'
+        )
+
+    if not furniture.is_active:
+        """
+        Check either the is_active field is already activated or not.
+        """
+        raise APIException(
+            'The provided furniture has already been deactivated.'
+        )
+    else:
+        furniture.is_active = ~F('is_active')
+        furniture.save(update_fields=['is_active'])

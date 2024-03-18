@@ -14,6 +14,16 @@ filters_type = TypedDict(
 )
 
 
+def list_all_furniture() -> QuerySet[Furniture]:
+    """Getting and returning all furniture from database."""
+    all_furniture = Furniture.objects.select_related(
+        'category', 'company'
+    ).only(
+        'name', 'price', 'image', 'is_active', 'category_id', 'company_id'
+    )
+    return all_furniture
+
+
 def list_active_furniture(
         *, filters: filters_type | None
 ) -> QuerySet[Furniture]:

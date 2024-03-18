@@ -2,6 +2,7 @@
 Integration testing store app endpoints.
 """
 import pytest
+import random
 
 from decimal import Decimal
 from typing import Final
@@ -12,7 +13,8 @@ from store.models import Furniture, Company
 
 pytestmark: Final = pytest.mark.django_db
 
-FURNITURE_LIST_URL: Final[str] = reverse('store_api:furniture')
+ACTIVE_FURNITURE_URL: Final[str] = reverse('store_api:active_furniture')
+ALL_FURNITURE_URL: Final[str] = reverse('store_api:furniture')
 ALL_COMPANY_URL: Final[str] = reverse('store_api:company')
 ACTIVE_COMPANY_URL: Final[str] = reverse('store_api:active_company')
 
@@ -41,6 +43,18 @@ def deactivate_company_url(*, slug: str) -> str:
     return reverse('store_api:deactivate_company', args=[slug])
 
 
+def activate_furniture_url(*, slug: str) -> str:
+    """Creating and returning url for
+    activating furniture by their slug."""
+    return reverse('store_api:activate_furniture', args=[slug])
+
+
+def deactivate_furniture_url(*, slug: str) -> str:
+    """Creating and returning url for
+    deactivating furniture by their slug."""
+    return reverse('store_api:deactivate_furniture', args=[slug])
+
+
 class TestPublicEndpoints:
     """
     Test endpoints which dont need a authenticated client.
@@ -49,7 +63,7 @@ class TestPublicEndpoints:
             self, anon_client, furniture_factory: Furniture
     ) -> None:
         furniture_factory.create_batch(20)
-        response = anon_client.get(FURNITURE_LIST_URL)
+        response = anon_client.get(ACTIVE_FURNITURE_URL)
 
         assert response.status_code == status.HTTP_200_OK
         # Test pagination
@@ -104,7 +118,7 @@ class TestPublicEndpoints:
         )
 
         response = anon_client.get(
-            FURNITURE_LIST_URL, {'name__icontains': 'magi'}
+            ACTIVE_FURNITURE_URL, {'name__icontains': 'magi'}
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -112,7 +126,7 @@ class TestPublicEndpoints:
         assert len(response.data['results']) == 1
 
         response = anon_client.get(
-            FURNITURE_LIST_URL, {'price__range': '11, 20'}
+            ACTIVE_FURNITURE_URL, {'price__range': '11, 20'}
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -163,6 +177,41 @@ class TestPublicEndpoints:
         unauthenticated user unsuccessfully.
         """
         url: str = deactivate_company_url(slug='sample-slug')
+        response = anon_client.get(url)
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_get_all_furniture_anon_client_unsuccessfully(
+            self, anon_client
+    ) -> None:
+        """
+        Test getting all furniture with
+        anonymous client unsuccessfully.
+        """
+        response = anon_client.get(ALL_FURNITURE_URL)
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_activating_furniture_anon_client_unsuccessfully(
+            self, anon_client
+    ) -> None:
+        """
+        Test activating furniture by
+        unauthenticated user unsuccessfully.
+        """
+        url = activate_furniture_url(slug='sample-slug')
+        response = anon_client.get(url)
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_deactivating_furniture_anon_client_unsuccessfully(
+            self, anon_client
+    ) -> None:
+        """
+        Test deactivating furniture by
+        unauthenticated user unsuccessfully.
+        """
+        url = deactivate_furniture_url(slug='sample-slug')
         response = anon_client.get(url)
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
@@ -281,3 +330,84 @@ class TestPrivateEndpoints:
 
         assert response.status_code == status.HTTP_200_OK
         assert sample_company.is_active == bool(False)
+
+    def test_get_all_furniture_normal_client_unsuccessfully(
+            self, anon_client
+    ) -> None:
+        """
+        Test getting all furniture with
+        normal client unsuccessfully.
+        """
+        response = anon_client.get(ALL_FURNITURE_URL)
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_get_all_furniture_admin_client_successfully(
+            self, admin_client, furniture_factory
+    ) -> None:
+        """
+        Test getting all furniture with
+        admin client successfully.
+        """
+        furniture_factory.create_batch(
+            20, is_active=random.choice([True, False])
+        )
+        response = admin_client.get(ALL_FURNITURE_URL)
+
+        assert response.status_code == status.HTTP_200_OK
+        # Test pagination
+        assert len(response.data['results']) == 10
+
+    def test_activating_furniture_normal_client_unsuccessfully(
+            self, normal_client
+    ) -> None:
+        """
+        Test activating furniture by
+        normal client unsuccessfully.
+        """
+        url = activate_furniture_url(slug='sample-slug')
+        response = normal_client.get(url)
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_deactivating_furniture_normal_client_unsuccessfully(
+            self, normal_client
+    ) -> None:
+        """
+        Test activating furniture by
+        normal client unsuccessfully.
+        """
+        url = deactivate_furniture_url(slug='sample-slug')
+        response = normal_client.get(url)
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_activating_furniture_admin_client_successfully(
+            self, admin_client, furniture_factory
+    ) -> None:
+        """
+        Test activating furniture by
+        admin client unsuccessfully.
+        """
+        sample_furniture: Furniture = furniture_factory(is_active=False)
+        url = activate_furniture_url(slug=sample_furniture.slug)
+        response = admin_client.get(url)
+        sample_furniture.refresh_from_db()
+
+        assert response.status_code == status.HTTP_200_OK
+        assert sample_furniture.is_active == bool(True)
+
+    def test_deactivating_furniture_admin_client_successfully(
+            self, admin_client, furniture_factory
+    ):
+        """
+        Test deactivating furniture by
+        admin client unsuccessfully.
+        """
+        sample_furniture: Furniture = furniture_factory(is_active=True)
+        url = deactivate_furniture_url(slug=sample_furniture.slug)
+        response = admin_client.get(url)
+        sample_furniture.refresh_from_db()
+
+        assert response.status_code == status.HTTP_200_OK
+        assert sample_furniture.is_active == bool(False)
