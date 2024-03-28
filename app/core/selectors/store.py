@@ -5,9 +5,14 @@ from models which belong to store app.
 from typing import TypedDict, NotRequired
 from django.db.models import QuerySet, Avg
 
-from store.models import Furniture, Company
 from store.api.v1.filters import FurnitureFilter
+from store.models import (
+    Furniture,
+    Company,
+    Category
+)
 
+# =========== Furniture Business logics =========== #
 filters_type = TypedDict(
     'filters_type',
     {'name__icontains': NotRequired[str], 'price__range': NotRequired[str]}
@@ -39,6 +44,7 @@ def list_active_furniture(
     return FurnitureFilter(filters, queryset).qs
 
 
+# =========== Company Business logics =========== #
 def list_active_companies() -> QuerySet[Company]:
     """Listing active companies."""
     active_companies: QuerySet[Company] = Company.active.all().only(
@@ -53,3 +59,18 @@ def list_all_companies() -> QuerySet[Company]:
         'name', 'ceo', 'staff', 'is_active', 'slug'
     )
     return all_companies
+
+
+# =========== Category Business logics =========== #
+def list_active_categories() -> QuerySet[Category]:
+    """Listing active categories."""
+    active_categories: QuerySet[Category] = Category.active.all()
+    return active_categories
+
+
+def list_all_categories() -> QuerySet[Category]:
+    """Listing all categories."""
+    all_categories: QuerySet[Category] = Category.objects.all().only(
+        'name', 'is_active', 'slug'
+    )
+    return all_categories

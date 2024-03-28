@@ -8,6 +8,7 @@ from . import apis
 app_name = 'store_api'
 
 urlpatterns = [
+    # ============= Furniture URL's ============= #
     path(
         'furniture/active/',
         apis.ActiveFurnitureApiView.as_view(),
@@ -38,12 +39,14 @@ urlpatterns = [
         apis.DeactivateFurnitureApiView.as_view(),
         name='deactivate_furniture'
     ),
+
+    # ============= Company URL's ============= #
     path(
-        'company/active/',
+        'companies/active/',
         apis.ActiveCompaniesApiView.as_view(),
         name='active_company'
     ),
-    path('company/all/', apis.CompanyApiView.as_view(), name='company'),
+    path('companies/all/', apis.CompanyApiView.as_view(), name='company'),
     path(
         'company/<str:slug>/activate/',
         apis.ActivateCompanyApiView.as_view(),
@@ -53,5 +56,27 @@ urlpatterns = [
         'company/<str:slug>/deactivate/',
         apis.DeactivateCompanyApiView.as_view(),
         name='deactivate_company'
-    )
+    ),
+    path(
+        'company/<str:slug>/delete/',
+        apis.DeleteCompanyApiView.as_view(),
+        name='delete_furniture'
+    ),
+
+    # ============= Category URL's ============= #
+    path(
+        'categories/all/',
+        apis.CategoryApiView.as_view(),
+        name='categories'
+    ),
+    path(
+        'category/<str:slug>/activate/',
+        apis.ActivateCategoryApiView.as_view(),
+        name='activate_category'
+    ),
+    path(
+        'category/<str:slug>/deactivate/',
+        apis.DeactivateCategoryApiView.as_view(),
+        name='deactivate_category'
+    ),
 ]

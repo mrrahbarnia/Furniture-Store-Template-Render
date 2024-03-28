@@ -12,6 +12,7 @@ from .factories import (
     FurnitureFactory,
     MaterialFactory,
     ColorFactory,
+    CategoryFactory,
     CompanyFactory,
     FurnitureMaterialFactory,
     FurnitureColorFactory
@@ -22,6 +23,7 @@ User = get_user_model()
 register(FurnitureFactory)
 register(MaterialFactory)
 register(ColorFactory)
+register(CategoryFactory)
 register(CompanyFactory)
 register(FurnitureColorFactory)
 register(FurnitureMaterialFactory)

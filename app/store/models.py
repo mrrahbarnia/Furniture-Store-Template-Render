@@ -133,6 +133,7 @@ class Category(BaseModel):
         self.name = self.name.capitalize()
 
     class Meta:
+        verbose_name_plural = 'categories'
         constraints = [
             models.UniqueConstraint(
                 Lower('name'), name='unique_category'

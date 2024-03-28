@@ -23,18 +23,29 @@ from core.services.store import (
     activate_company,
     deactivate_company,
     activate_furniture,
-    deactivate_furniture
+    deactivate_furniture,
+    delete_company,
+    activate_category,
+    deactivate_category,
+    create_company
 )
 from core.selectors.store import (
     list_active_furniture,
     list_active_companies,
     list_all_companies,
-    list_all_furniture
+    list_all_furniture,
+    # list_active_categories,
+    list_all_categories
 )
 from .serializers import CompanyBaseSerializer
-from ...models import Furniture, Company
+from ...models import (
+    Furniture,
+    Company,
+    Category
+)
 
 
+# ================= Furniture Api's ================= #
 class ActiveFurnitureApiView(APIView):
     """Furniture api for listing them."""
 
@@ -165,103 +176,6 @@ class RatingFurnitureApiView(APIView):
         return Response(status=status.HTTP_200_OK)
 
 
-class ActiveCompaniesApiView(APIView):
-
-    class Pagination(LimitOffsetPagination):
-        default_limit = 10
-
-    @extend_schema(responses=CompanyBaseSerializer)
-    def get(
-        self, request, *args: Any, **kwargs: Any
-    ) -> Response | serializers.ValidationError:
-        """Listing all active companies."""
-        try:
-            active_companies: QuerySet[Company] = list_active_companies()
-        except Exception as ex:
-            raise serializers.ValidationError(
-                {'error': f'{ex}'}
-            )
-        return get_paginated_response_context(
-            pagination_class=self.Pagination,
-            serializer_class=CompanyBaseSerializer,
-            queryset=active_companies,
-            request=request,
-            view=self
-        )
-
-
-class CompanyApiView(APIView):
-    permission_classes = [permissions.IsAdminUser]
-
-    class AllCompanySerializer(CompanyBaseSerializer):
-        # is_active = serializers.BooleanField()
-        activate_deactivate_url = serializers.SerializerMethodField()
-
-        def get_activate_deactivate_url(self, company: Company):
-            request = self.context.get('request')
-            if not company.is_active:
-                path = reverse(
-                    'store_api:activate_company', args=[company.slug]
-                )
-            elif company.is_active:
-                path = reverse(
-                    'store_api:deactivate_company', args=[company.slug]
-                )
-            return request.build_absolute_uri(path)
-
-    def get(
-            self, request, *args: Any, **kwargs: Any
-    ) -> Response | serializers.ValidationError:
-        """Listing all companies with AdminUser
-        permission for activating or deactivating them."""
-        try:
-            all_companies: QuerySet[Company] = list_all_companies()
-        except Exception as ex:
-            raise serializers.ValidationError(
-                {'error': f'{ex}'}
-            )
-        response = self.AllCompanySerializer(
-            all_companies, many=True, context={'request': request}
-        ).data
-        return Response(response, status=status.HTTP_200_OK)
-
-
-class ActivateCompanyApiView(APIView):
-    permission_classes = [permissions.IsAdminUser]
-
-    def get(
-            self, request, slug: str, *args: Any, **kwargs: Any
-    ) -> Response | serializers.ValidationError:
-        """
-        Activating an existing company by it's slug.
-        """
-        try:
-            activate_company(slug=slug)
-        except Exception as ex:
-            raise serializers.ValidationError(
-                {'error': f'{ex}'}
-            )
-        return Response(status=status.HTTP_200_OK)
-
-
-class DeactivateCompanyApiView(APIView):
-    permission_classes = [permissions.IsAdminUser]
-
-    def get(
-            self, request, slug: str, *args: Any, **kwargs: None
-    ) -> Response | serializers.ValidationError:
-        """
-        Deactivating an existing company by it's slug.
-        """
-        try:
-            deactivate_company(slug=slug)
-        except Exception as ex:
-            raise serializers.ValidationError(
-                {'error': f'{ex}'}
-            )
-        return Response(status=status.HTTP_200_OK)
-
-
 class FurnitureApiView(APIView):
     permission_classes = [permissions.IsAdminUser]
 
@@ -328,6 +242,231 @@ class DeactivateFurnitureApiView(APIView):
         """
         try:
             deactivate_furniture(slug=slug)
+        except Exception as ex:
+            raise serializers.ValidationError(
+                {'error': f'{ex}'}
+            )
+        return Response(status=status.HTTP_200_OK)
+
+
+# ================= Company Api's ================= #
+class CompanyApiView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    class AllCompanySerializer(CompanyBaseSerializer):
+        # is_active = serializers.BooleanField()
+        activate_deactivate_url = serializers.SerializerMethodField()
+
+        def get_activate_deactivate_url(self, company: Company):
+            request = self.context.get('request')
+            if not company.is_active:
+                path = reverse(
+                    'store_api:activate_company', args=[company.slug]
+                )
+            elif company.is_active:
+                path = reverse(
+                    'store_api:deactivate_company', args=[company.slug]
+                )
+            return request.build_absolute_uri(path)
+
+    @extend_schema(responses=AllCompanySerializer)
+    def get(
+            self, request, *args: Any, **kwargs: Any
+    ) -> Response | serializers.ValidationError:
+        """
+        Listing all companies with AdminUser
+        permission for activating or deactivating them.
+        """
+        try:
+            all_companies: QuerySet[Company] = list_all_companies()
+        except Exception as ex:
+            raise serializers.ValidationError(
+                {'error': f'{ex}'}
+            )
+        response = self.AllCompanySerializer(
+            all_companies, many=True, context={'request': request}
+        ).data
+        return Response(response, status=status.HTTP_200_OK)
+
+    @extend_schema(
+            request=CompanyBaseSerializer,
+            responses=CompanyBaseSerializer
+    )
+    def post(
+            self, request, *args: Any, **kwargs: Any
+    ) -> Response | serializers.ValidationError:
+        """
+        Creating companies only by admin users.
+        """
+        serializer = CompanyBaseSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            company: Company = create_company(
+                name=serializer.validated_data.get('name'),
+                ceo=serializer.validated_data.get('ceo'),
+                staff=serializer.validated_data.get('staff')
+            )
+        except Exception as ex:
+            raise serializers.ValidationError(
+                {'error': f'{ex}'}
+            )
+        response = CompanyBaseSerializer(company).data
+        return Response(response, status=status.HTTP_201_CREATED)
+
+
+class ActiveCompaniesApiView(APIView):
+
+    class Pagination(LimitOffsetPagination):
+        default_limit = 10
+
+    @extend_schema(responses=CompanyBaseSerializer)
+    def get(
+        self, request, *args: Any, **kwargs: Any
+    ) -> Response | serializers.ValidationError:
+        """Listing all active companies."""
+        try:
+            active_companies: QuerySet[Company] = list_active_companies()
+        except Exception as ex:
+            raise serializers.ValidationError(
+                {'error': f'{ex}'}
+            )
+        return get_paginated_response_context(
+            pagination_class=self.Pagination,
+            serializer_class=CompanyBaseSerializer,
+            queryset=active_companies,
+            request=request,
+            view=self
+        )
+
+
+class ActivateCompanyApiView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def get(
+            self, request, slug: str, *args: Any, **kwargs: Any
+    ) -> Response | serializers.ValidationError:
+        """
+        Activating an existing company by it's slug.
+        """
+        try:
+            activate_company(slug=slug)
+        except Exception as ex:
+            raise serializers.ValidationError(
+                {'error': f'{ex}'}
+            )
+        return Response(status=status.HTTP_200_OK)
+
+
+class DeactivateCompanyApiView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def get(
+            self, request, slug: str, *args: Any, **kwargs: None
+    ) -> Response | serializers.ValidationError:
+        """
+        Deactivating an existing company by it's slug.
+        """
+        try:
+            deactivate_company(slug=slug)
+        except Exception as ex:
+            raise serializers.ValidationError(
+                {'error': f'{ex}'}
+            )
+        return Response(status=status.HTTP_200_OK)
+
+
+class DeleteCompanyApiView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def delete(
+            self, request, slug: str, *args, **kwargs
+    ) -> Response | serializers.ValidationError:
+        """
+        Delete a specific company with
+        it's slug only by admin users.
+        """
+        try:
+            delete_company(slug=slug)
+        except Exception as ex:
+            raise serializers.ValidationError(
+                {'error': f'{ex}'}
+            )
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# ================= Category Api's ================= #
+# class ActiveCategoriesApiView(APIView):
+#     pass
+
+
+class CategoryApiView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    class OutputSerializer(serializers.Serializer):
+        name = serializers.CharField(max_length=150)
+        is_active = serializers.BooleanField()
+        activate_deactivate_url = serializers.SerializerMethodField()
+
+        def get_activate_deactivate_url(self, category: Category):
+            request = self.context.get('request')
+            if category.is_active:
+                path = reverse(
+                    'store_api:deactivate_category', args=[category.slug]
+                )
+            elif not category.is_active:
+                path = reverse(
+                    'store_api:activate_category', args=[category.slug]
+                )
+            return request.build_absolute_uri(path)
+
+    @extend_schema(responses=[OutputSerializer])
+    def get(
+            self, request, *args: Any, **kwargs: Any
+    ) -> Response | serializers.ValidationError:
+        """
+        Listing all categories only by admin users.
+        """
+        try:
+            categories: QuerySet[Category] = list_all_categories()
+        except Exception as ex:
+            raise serializers.ValidationError(
+                {'error': f'{ex}'}
+            )
+        response = self.OutputSerializer(
+            categories, many=True, context={'request': request}
+        ).data
+        return Response(response, status=status.HTTP_200_OK)
+
+
+class ActivateCategoryApiView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def get(
+            self, request, slug: str, *args: Any, **kwargs: Any
+    ) -> None:
+        """
+        Activate categories by their slug only by admin users.
+        """
+        try:
+            activate_category(slug=slug)
+        except Exception as ex:
+            raise serializers.ValidationError(
+                {'error': f'{ex}'}
+            )
+        return Response(status=status.HTTP_200_OK)
+
+
+class DeactivateCategoryApiView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def get(
+            self, request, slug: str, *args: Any, **kwargs: Any
+    ) -> None:
+        """
+        Deactivate categories by their slug only by admin users.
+        """
+        try:
+            deactivate_category(slug=slug)
         except Exception as ex:
             raise serializers.ValidationError(
                 {'error': f'{ex}'}
