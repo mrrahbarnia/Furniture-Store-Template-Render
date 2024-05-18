@@ -11,14 +11,10 @@ COPY ./requirements/local.txt /tmp/local.txt
 COPY ./requirements/base.txt /tmp/base.txt
 COPY ./app /app
 
-RUN pip install --upgrade pip && \
-    apk add --no-cache postgresql-client jpeg-dev && \
-    apk add --no-cache --virtual .tmp-build-deps \
-        build-base postgresql-dev musl-dev zlib zlib-dev linux-headers && \
-    pip install --no-cache-dir -r /tmp/local.txt && \
-    rm -rf /tmp && \
-    apk del .tmp-build-deps && \
-    adduser \
+RUN pip install --upgrade pip
+RUN pip install --no-cache-dir -r /tmp/local.txt
+RUN rm -rf /tmp
+RUN adduser \
       --disabled-password \
       --no-create-home \
       mohammadreza && \

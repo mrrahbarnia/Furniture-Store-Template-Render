@@ -1,20 +1,17 @@
 """
 Generating fake data for testing with factory boy module.
 """
-# import random
 import factory
 from faker import Faker
 from django.utils.text import slugify
 from django.utils import timezone
 
-# from users.models import BaseUser
 from store.models import (
     Furniture,
     Category,
     Company,
     Material,
     Color,
-    # Rating,
     FurnitureColor,
     FurnitureMaterial
 )

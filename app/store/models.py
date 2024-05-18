@@ -25,7 +25,7 @@ def furniture_image_file_path(instance, filename):
     unique_name = uuid.uuid4()
     filename = f'{unique_name}{ext}'
 
-    path = os.path. join('uploads', 'furniture', filename)
+    path = os.path.join('uploads', 'furniture', filename)
     return path
 
 
@@ -76,7 +76,7 @@ class Furniture(BaseModel):
         constraints = [
             models.UniqueConstraint(
                 Lower('name'), name='unique_furniture_name'
-            )
+            ),
         ]
 
 

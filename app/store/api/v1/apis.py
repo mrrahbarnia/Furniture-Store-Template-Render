@@ -34,7 +34,7 @@ from core.selectors.store import (
     list_active_companies,
     list_all_companies,
     list_all_furniture,
-    # list_active_categories,
+    list_active_categories,
     list_all_categories
 )
 from .serializers import CompanyBaseSerializer
@@ -181,6 +181,13 @@ class FurnitureApiView(APIView):
 
     class Pagination(LimitOffsetPagination):
         default_limit = 10
+    
+    class FurnitureInputSerializer(serializers.Serializer):
+        name = serializers.CharField(max_length=150)
+        price = serializers.DecimalField(max_digits=8, decimal_places=2)
+        stock = serializers.IntegerField()
+
+
 
     class FurnitureOutputSerializer(serializers.Serializer):
         name = serializers.CharField(max_length=150)
@@ -209,6 +216,17 @@ class FurnitureApiView(APIView):
             request=request,
             view=self
         )
+    
+    @extend_schema(
+            request=FurnitureInputSerializer,
+            responses=FurnitureOutputSerializer
+    )
+    def post(
+            self, request, *args: Any, **kwargs: Any
+    ) -> Response | serializers.ValidationError:
+        """
+        Creating furniture only by admin clients.
+        """
 
 
 class ActivateFurnitureApiView(APIView):
@@ -395,8 +413,33 @@ class DeleteCompanyApiView(APIView):
 
 
 # ================= Category Api's ================= #
-# class ActiveCategoriesApiView(APIView):
-#     pass
+class ActiveCategoriesApiView(APIView):
+
+    class Pagination(LimitOffsetPagination):
+        default_limit = 10
+
+    class ActiveCategoriesOutputSerializer(serializers.Serializer):
+        name = serializers.CharField(max_length=150)
+
+    def get(
+            self, request, *args: Any, **kwargs: Any
+    ) -> Response | serializers.ValidationError:
+        """
+        Listing active categories by every users.
+        """
+        try:
+            active_categories: QuerySet[Category] = list_active_categories()
+        except Exception as ex:
+            raise serializers.ValidationError(
+                {'error': f'{ex}'}
+            )
+        return get_paginated_response_context(
+            pagination_class=self.Pagination,
+            serializer_class=self.ActiveCategoriesOutputSerializer,
+            queryset=active_categories,
+            request=request,
+            view=self
+        )
 
 
 class CategoryApiView(APIView):

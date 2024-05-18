@@ -150,10 +150,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.BaseUser'
 
 REST_FRAMEWORK = {
+    'EXCEPTION_HANDLER': 'core.exceptions.exceptions.custom_exception_handler', 
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.BasicAuthentication'
+        'rest_framework_simplejwt.authentication.JWTAuthentication', 
     ),
     'COERCE_DECIMAL_TO_STRING': False,
 }

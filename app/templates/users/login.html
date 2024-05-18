@@ -1,0 +1,32 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+
+    <link rel="stylesheet" href={% static "css/login.css" %}>
+</head>
+<body>
+    <div class="container">
+        <form class="form">
+            <div class="form-wrapper">
+                <div class="inputs-wrapper">
+                    <label for="email">ایمیل:</label>
+                    <input class="email-input" type="text" id="email" placeholder="ایمیل خود را وارد کنید">
+                </div>
+                <div class="inputs-wrapper">
+                    <label for="password">پسورد:</label>
+                    <input class="password-input" name="password" type="password" id="password" placeholder="پسورد خود را وارد کنید">
+                </div>
+                <p class="login-result"></p>
+                <button class="btn" type="submit">ورود</button>
+                <button class="btn btn-home" type="button">خانه</button>
+            </div>
+        </form>
+    </div>
+
+    <script src={% static "js/Login.js" %}></script>
+</body>
+</html>

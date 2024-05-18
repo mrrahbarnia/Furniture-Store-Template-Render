@@ -2,11 +2,12 @@ Django==5.0.2
 djangorestframework==3.14.0
 drf-spectacular==0.27.1
 pillow==10.2.0
-psycopg2==2.9.9
 django-redis==5.4.0
 pytest==8.0.2
 pytest-django==4.8.0
 flake8==7.0.0
 factory-boy==3.3.0
 pytest-factoryboy==2.7.0
-django-filter
+django-filter==24.2
+djangorestframework-simplejwt==5.3.1
+psycopg[binary,pool]

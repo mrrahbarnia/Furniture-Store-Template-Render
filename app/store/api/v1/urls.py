@@ -70,6 +70,11 @@ urlpatterns = [
         name='categories'
     ),
     path(
+        'categories/active/',
+        apis.ActiveCategoriesApiView.as_view(),
+        name='active_categories'
+    ),
+    path(
         'category/<str:slug>/activate/',
         apis.ActivateCategoryApiView.as_view(),
         name='activate_category'

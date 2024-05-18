@@ -48,7 +48,7 @@ def list_active_furniture(
 def list_active_companies() -> QuerySet[Company]:
     """Listing active companies."""
     active_companies: QuerySet[Company] = Company.active.all().only(
-        'name', 'ceo', 'staff'
+        'name', 'ceo', 'staff', 'slug'
     )
     return active_companies
 
@@ -74,3 +74,11 @@ def list_all_categories() -> QuerySet[Category]:
         'name', 'is_active', 'slug'
     )
     return all_categories
+
+
+def list_active_categories() -> QuerySet[Category]:
+    """
+    getting active categories from database.
+    """
+    active_categories: QuerySet[Category] = Category.active.all().only('name')
+    return active_categories

@@ -9,10 +9,16 @@ from drf_spectacular.views import (
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('store/', include('store.urls')),
+
+    # ========== Store URL's ========== #
+    path('', include('store.urls')),
     path('store/api/v1/', include('store.api.v1.urls')),
 
-    # ========== API schema generator ==========
+    # ========== Users URL's ========== #
+    path('users/', include('users.urls')),
+    path('accounts/api/v1/', include('users.api.v1.urls')),
+
+    # ========== API schema generator ========== #
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path(
         'api/', SpectacularSwaggerView.as_view(url_name='schema'),

@@ -1,0 +1,119 @@
+@font-face {
+    font-family: 'Vazir Light';
+    src: url(../fonts/Vazir-Light.woff2);
+}
+
+@font-face {
+    font-family: 'Vazir Regular';
+    src: url(../fonts/Vazir-Regular.woff2);
+}
+
+@font-face {
+    font-family: 'Vazir Bold';
+    src: url(../fonts/Vazir-Bold.woff2);
+}
+
+:root {
+    --body-color: #263238;
+    font-family: 'Vazir Regular';
+}
+
+html {
+    box-sizing: border-box;
+}
+
+*,
+*:after,
+*::before {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--body-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 5rem;
+}
+
+.container {
+    width: 20rem;
+    margin: 0 auto;
+    background-color: transparent;
+}
+
+.form-wrapper {
+    display: flex;
+    align-items: flex-start;
+    padding: 2rem;
+    gap: 1rem;
+    justify-content: center;
+    flex-direction: column;
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 1rem;
+    color: #fff;
+}
+
+.btn {
+    font-family: 'Vazir Regular';
+    text-align: center;
+    padding: 0.3rem 3rem;
+    border-radius: 0.2rem;
+    border: none;
+    outline: none;
+    background-color: #fff;
+    margin: 2rem auto 0 auto;
+    background-color: var(--body-color);
+    color: #fff;
+    transition: 100ms all ease-in 100ms;
+
+}
+
+.btn-home {
+    margin-top: 0.1rem;
+}
+
+.btn:hover {
+    transform: scale(1.2);
+    background-color: #fff;
+    color: var(--body-color);
+    cursor: pointer;
+}
+
+.inputs-wrapper {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+
+.inputs-wrapper input {
+    border: none;
+    outline: none;
+    border-radius: 0.1rem;
+    font-family: 'Vazir Regular';
+    padding: 0.1rem 0.3rem;
+    background-color: var(--body-color);
+    color: #fff;
+    direction: ltr;
+    text-align: center;
+}
+
+
+.result {
+    font-size: 0.8rem;
+    text-align: center;
+    margin: 1rem;
+}
+
+@media only screen and (max-width: 350px){
+    .container {
+        width: 16rem;
+    }
+    .inputs-wrapper {
+        flex-wrap: wrap;
+    }
+    .inputs-wrapper input {
+        width: 100%;
+    }
+}
