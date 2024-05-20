@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -28,8 +29,11 @@ LOCAL_APPS = [
 
 THIRD_PARTY_APP = [
     'rest_framework',
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'drf_spectacular',
     'django_filters',
+    'mail_templated',
 
 ]
 
@@ -149,6 +153,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Custom user path
 AUTH_USER_MODEL = 'users.BaseUser'
 
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=90),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True
+}
+
 REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'core.exceptions.exceptions.custom_exception_handler', 
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
@@ -156,4 +167,27 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication', 
     ),
     'COERCE_DECIMAL_TO_STRING': False,
+}
+
+# Reset password timeout
+RESET_PASSWORD_TIMEOUT = timedelta(minutes=5)
+
+# Email config for development
+if DEBUG:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_USE_TLS = False
+    EMAIL_HOST = "smtp4dev"
+    EMAIL_HOST_USER = ""
+    EMAIL_HOST_PASSWORD = ""
+    EMAIL_PORT = 25
+
+# Redis caching config
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://redis:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
 }

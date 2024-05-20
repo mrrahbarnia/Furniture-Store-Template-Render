@@ -30,7 +30,9 @@ html {
 }
 
 body {
-    background-color: var(--body-color);
+    background: rgb(38,50,56);
+    background: linear-gradient(90deg, rgba(38,50,56,1) 0%, rgba(84,110,122,1) 100%);
+
     display: flex;
     align-items: center;
     justify-content: center;
@@ -53,6 +55,14 @@ body {
     background-color: rgba(0, 0, 0, 0.1);
     border-radius: 1rem;
     color: #fff;
+    width: 100%;
+}
+
+.buttons {
+    display: flex;
+    flex-direction: column;
+    margin: 1rem auto;
+    gap: 1rem;
 }
 
 .btn {
@@ -63,15 +73,10 @@ body {
     border: none;
     outline: none;
     background-color: #fff;
-    margin: 2rem auto 0 auto;
     background-color: var(--body-color);
     color: #fff;
     transition: 100ms all ease-in 100ms;
 
-}
-
-.btn-home {
-    margin-top: 0.1rem;
 }
 
 .btn:hover {
@@ -85,25 +90,28 @@ body {
     display: flex;
     gap: 0.3rem;
     align-items: center;
+    width: 100%;
+    flex-wrap: wrap;
 }
 
 .inputs-wrapper input {
     border: none;
     outline: none;
-    border-radius: 0.1rem;
+    border-radius: 0.4rem;
     font-family: 'Vazir Regular';
     padding: 0.1rem 0.3rem;
     background-color: var(--body-color);
     color: #fff;
     direction: ltr;
     text-align: center;
+    width: 100%;
 }
 
 
 .result {
     font-size: 0.8rem;
     text-align: center;
-    margin: 1rem;
+    margin: 1rem auto;
 }
 
 @media only screen and (max-width: 350px){

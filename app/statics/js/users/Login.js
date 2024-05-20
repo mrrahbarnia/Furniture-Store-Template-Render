@@ -1,9 +1,10 @@
 const $ = document
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const loginForm = $.querySelector('form')
+const loginForm = $.querySelector('.form')
 const loginResult = $.querySelector('.result')
-const formWrapper = $.querySelector('.form-wrapper')
+const buttons = $.querySelector('.buttons')
+const forgotBtn = $.querySelector('#forgot-btn')
 
 loginForm.addEventListener('submit', (event) => {
     event.preventDefault();
@@ -28,20 +29,24 @@ const loginFetch = async (email, password) => {
     })
     let fetchedJson = await fetchedData.json()
     if (fetchedData.status === 200) {
-        setTokenToCookie(fetchedJson['access'])
+        setTokenToLocal(JSON.stringify({'access': fetchedJson['access'], 'refresh': fetchedJson['refresh']}))
         loginResult.style.color = '#C8E6C9'
         loginResult.innerHTML = 'با موفقیت وارد شدید'
     } else if (fetchedJson.message === 'No active account found with the given credentials') {
         loginResult.style.color = '#FFCDD2'
         loginResult.innerHTML = 'کاربری با اطلاعات وارد شده یافت نشد'
-        formWrapper.insertAdjacentHTML('beforeend', 
+        buttons.insertAdjacentHTML('beforeend', 
             `
-            <button class="btn btn-home">ثبت نام</button>
+            <button class="btn">ثبت نام</button>
             `
         )
     }
 }
 
-const setTokenToCookie = (accessToken) => {
-    localStorage.setItem('AUTH-TOKEN', accessToken)
+const setTokenToLocal = (tokens) => {
+    localStorage.setItem('AUTH-TOKEN', tokens)
 }
+
+forgotBtn.addEventListener('click', () => {
+    location.href = '/users/reset-password/'
+})

@@ -10,4 +10,5 @@ factory-boy==3.3.0
 pytest-factoryboy==2.7.0
 django-filter==24.2
 djangorestframework-simplejwt==5.3.1
+django-mail-templated
 psycopg[binary,pool]

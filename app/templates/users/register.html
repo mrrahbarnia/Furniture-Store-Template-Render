@@ -17,21 +17,23 @@
                         <input class="email-input" type="text" id="email" placeholder="ایمیل خود را وارد کنید">
                     </div>
                     <div class="inputs-wrapper">
-                        <label for="password">پسورد:</label>
-                        <input class="password-input" name="password" type="password" id="password" placeholder="پسورد خود را وارد کنید">
+                        <label for="password">رمز عبور:</label>
+                        <input class="password-input" name="password" type="password" id="password" placeholder="رمز عبور خود را وارد کنید">
                     </div>
                     <div class="inputs-wrapper">
-                        <label for="password2">تکرار پسورد:</label>
-                        <input class="password-input" name="password2" type="password" id="password2" placeholder="پسورد خود را تکرار کنید">
+                        <label for="password2">تکرار رمز عبور:</label>
+                        <input class="password-input" name="password2" type="password" id="password2" placeholder="رمز عبور خود را تکرار کنید">
                     </div>
                     
                 <p class="result"></p>
-                <button class="btn" type="submit">ثبت نام</button>
-                <button class="btn btn-home" type="button">خانه</button>
+                <div class="buttons">
+                    <button class="btn" type="submit">ثبت نام</button>
+                    <button class="btn" type="button">خانه</button>
+                </div>
             </div>
         </form>
     </div>
 
-    <script src={% static "js/Register.js" %}></script>
+    <script src={% static "js/users/Register.js" %}></script>
 </body>
 </html>

@@ -443,7 +443,7 @@ class ActiveCategoriesApiView(APIView):
 
 
 class CategoryApiView(APIView):
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [permissions.IsAuthenticated]
 
     class OutputSerializer(serializers.Serializer):
         name = serializers.CharField(max_length=150)
